@@ -52,6 +52,7 @@ void swap(Vertice* xp, Vertice* yp){
     *yp = temp;
 }
   
+// An optimized version of Bubble Sort
 void bubblePolarSort(std::vector<Vertice> lista_adj){
     int i, j;
     bool swapped;
@@ -63,6 +64,9 @@ void bubblePolarSort(std::vector<Vertice> lista_adj){
                 swapped = true;
             }
         }
+  
+        // If no two elements were swapped by inner loop,
+        // then break
         if (swapped == false)
             break;
     }
