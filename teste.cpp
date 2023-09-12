@@ -30,11 +30,19 @@ class Vertice{
             this->grau = 0;
         }
 
-        Vertice(int _id, int _grau, int _x, int _y){
+        Vertice(int _id, int _x, int _y, int _grau){
             this->id = _id;
             this->cord = Ponto(_x, _y);
             this->grau = _grau;
         }
+
+        Vertice(int _id, int _x, int _y, int _grau, std::vector<Vertice> _lista_adj){
+            this->id = _id;
+            this->cord = Ponto(_x, _y);
+            this->grau = _grau;
+            this->lista_adj = _lista_adj;
+        }
+
 };
 
 // Dist^ancia euclidiana de a para b.
@@ -60,9 +68,10 @@ int TipoCurva(Ponto a, Ponto b, Ponto c) {
     return 0; // em frente.
 }
 
+//Bubble Sort Polar
 std::vector<Vertice> ordenarPolar(Vertice vertice){
     for(int k = 0; k < vertice.lista_adj.size() - 1; k++){
-        for(int i = 0; i < vertice.lista_adj.size() - 1; i++){
+        for(int i = 0; i < vertice.lista_adj.size() - k; i++){
             if(inclinacao(vertice.lista_adj[i].cord) > inclinacao(vertice.lista_adj[i + 1].cord)){
                 Vertice temp = vertice.lista_adj[i];
                 vertice.lista_adj[i] = vertice.lista_adj[i+1];
@@ -76,7 +85,7 @@ std::vector<Vertice> ordenarPolar(Vertice vertice){
 
 int main(){
     Vertice v(0, 1, 1, 1);
-    v.lista_adj = {Vertice(1, 2, 3, 2), Vertice(2, 1, 5, 1)};
+    v.lista_adj = {Vertice(1, 3, 2, 2), Vertice(2, 5, 1, 1)};
     std::vector<Vertice> ordenados = ordenarPolar(v);
 
     for(int i = 0; i < ordenados.size(); i++){

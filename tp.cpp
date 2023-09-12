@@ -4,7 +4,7 @@
 
 std::vector<int> ordenar(std::vector<int> vetor){
     for(int k = 0; k < vetor.size() - 1; k++){
-        for(int i = 0; i < vetor.size() - 1; i++){
+        for(int i = 0; i < vetor.size() - k; i++){
             if(vetor[i] > vetor[i + 1]){
                 int temp = vetor[i];
                 vetor[i] = vetor[i+1];
