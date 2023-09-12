@@ -73,7 +73,10 @@ int TipoCurva(Ponto a, Ponto b, Ponto c) {
 }
 
 //Ordena os vértices adjacentes a certo vértice de maneira anti-horária, baseando-se no angulo polar.
-std::vector<Vertice> ordenarPolar(Vertice vertice){
+void ordenarPolar(Vertice &vertice){
+    if(vertice.lista_adj.size() < 1){
+        return;
+    }
     for(int k = 0; k < vertice.lista_adj.size() - 1; k++){
         for(int i = 0; i < vertice.lista_adj.size() - 1; i++){
             if(inclinacaoRelativa(vertice.cord, vertice.lista_adj[i].cord) > inclinacaoRelativa(vertice.cord, vertice.lista_adj[i + 1].cord)){
@@ -83,27 +86,38 @@ std::vector<Vertice> ordenarPolar(Vertice vertice){
             }
         }
     }
-
-    return vertice.lista_adj;
 }
 
-void DFS(Vertice raiz){
+void DFS(Vertice &raiz){
     raiz.cor = "cinza";
+    std::cout << raiz.id << " Ficou cinza\n";
     for(int i = 0; i < raiz.lista_adj.size(); i++){
         if(raiz.lista_adj[i].cor == "branco"){
             DFS(raiz.lista_adj[i]);
         }
     }
     raiz.cor = "preto";
+    std::cout << raiz.id << " Ficou preto\n";
 }
 
 int main(){
     Vertice v(0, 4, 0, 0);
     v.lista_adj = {Vertice(1, 1, 1, 1), Vertice(2, 1, -1, -1), Vertice(3, 1, 1, -1), Vertice(4, 1, -1, 1)};
-    std::vector<Vertice> ordenados = ordenarPolar(v);
 
-    for(int i = 0; i < ordenados.size(); i++){
-        std::cout << ordenados[i].id << ' ';
+    //ordena TODOS os vértices do grafo
+    for(int i = 0; i < v.lista_adj.size(); i++){
+        ordenarPolar(v.lista_adj[i]);
+    }
+
+    for(int i = 0; i < v.lista_adj.size(); i++){
+        std::cout << v.lista_adj[i].id << ' ';
+    }
+    std::cout << '\n';
+
+    DFS(v);
+
+    for(int i = 0; i < v.lista_adj.size(); i++){
+        std::cout << v.lista_adj[i].cor << ' ';
     }
     std::cout << '\n';
 

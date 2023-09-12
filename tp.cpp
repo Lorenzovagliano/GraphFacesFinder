@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 
-std::vector<int> ordenar(std::vector<int> vetor){
+void ordenar(std::vector<int> &vetor){
     for(int k = 0; k < vetor.size() - 1; k++){
         for(int i = 0; i < vetor.size() - k; i++){
             if(vetor[i] > vetor[i + 1]){
@@ -12,18 +12,16 @@ std::vector<int> ordenar(std::vector<int> vetor){
             }
         }
     }
-
-    return vetor;
 }
 
 
 
 int main(){
     std::vector<int> nums = {5, 4, 3, 2, 1, 0};
-    std::vector<int> vetor = ordenar(nums);
+    ordenar(nums);
 
-    for(int i = 0; i < vetor.size(); i++){
-        std::cout << vetor[i] << ' ';
+    for(int i = 0; i < nums.size(); i++){
+        std::cout << nums[i] << ' ';
     }
 
     return 0;
