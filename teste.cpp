@@ -88,6 +88,17 @@ void ordenarPolar(Vertice* vertice){
     }
 }
 
+//Ordena todas as listas de adjacência de vértices conexos a certo vértice
+void ordenarPolarRecursivo(Vertice* vertice){
+    ordenarPolar(vertice);
+    for(int i = 0; i < vertice->lista_adj.size(); i++){
+        if(vertice->lista_adj.size() < 1){
+            return;
+        }
+        ordenarPolarRecursivo(vertice->lista_adj[0]);
+    }
+}
+
 void DFS(Vertice* raiz){
     raiz->cor = "cinza";
     std::cout << raiz->id << " Ficou cinza\n";
@@ -100,6 +111,7 @@ void DFS(Vertice* raiz){
     std::cout << raiz->id << " Ficou preto\n";
 }
 
+
 int main(){
     Vertice* v = new Vertice(0, 4, 0, 0);
     v->lista_adj = {new Vertice(1, 1, 1, 1), new Vertice(2, 1, -1, -1), new Vertice(3, 1, 1, -1), new Vertice(4, 1, -1, 1)};
@@ -107,12 +119,7 @@ int main(){
     v->lista_adj[2]->lista_adj.push_back(v->lista_adj[0]);
     
 
-    ordenarPolar(v);
-
-    //ordena TODOS os vértices do grafo
-    for(int i = 0; i < v->lista_adj.size(); i++){
-        ordenarPolar(v->lista_adj[i]);
-    }
+    ordenarPolarRecursivo(v);
 
     for(int i = 0; i < v->lista_adj.size(); i++){
         std::cout << v->lista_adj[i]->id << ' ';
