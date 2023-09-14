@@ -116,7 +116,7 @@ void DFS(Vertice* raiz){
 }
 
 void DFS2(Vertice* raiz, Vertice* raizAntiga, std::vector<Vertice*> &face, int id){
-    ordenarPolar2(raiz, raiz->lista_adj[0]);
+    ordenarPolar2(raiz, raizAntiga);
     //lista os adjacentes a vertices[0]
     std::cout << "Adjacentes de " << raiz->id << ": ";
     for(int i = 0; i < raiz->lista_adj.size(); i++){
@@ -164,7 +164,7 @@ int main(){
 
     //Mostra uma face
     std::vector<Vertice*> face;
-    DFS2(vertices[1], vertices[1], face, vertices[1]->id);
+    DFS2(vertices[1], vertices[1]->lista_adj[0], face, vertices[1]->id);
 
     //imprimir a face
     std::cout << '\n';
