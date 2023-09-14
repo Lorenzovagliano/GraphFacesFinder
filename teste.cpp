@@ -74,7 +74,7 @@ int TipoCurva(Ponto a, Ponto b, Ponto c) {
 
 //Ordena os vértices adjacentes a certo vértice de maneira anti-horária, baseando-se no angulo polar.
 void ordenarPolar(Vertice* vertice){
-    if(vertice->lista_adj.size() < 1){
+    if(vertice->lista_adj.size() < 2){
         return;
     }
     for(int k = 0; k < vertice->lista_adj.size() - 1; k++){
@@ -88,52 +88,82 @@ void ordenarPolar(Vertice* vertice){
     }
 }
 
-//Ordena todas as listas de adjacência de vértices conexos a certo vértice
-void ordenarPolarRecursivo(Vertice* vertice){
-    ordenarPolar(vertice);
-    for(int i = 0; i < vertice->lista_adj.size(); i++){
-        if(vertice->lista_adj.size() < 1){
-            return;
-        }
-        ordenarPolarRecursivo(vertice->lista_adj[0]);
-    }
-}
-
 void DFS(Vertice* raiz){
-    raiz->cor = "cinza";
-    std::cout << raiz->id << " Ficou cinza\n";
-    for(int i = 0; i < raiz->lista_adj.size(); i++){
-        if(raiz->lista_adj[i]->cor == "branco"){
-            DFS(raiz->lista_adj[i]);
+        raiz->cor = "cinza";
+        std::cout << raiz->id << " Ficou cinza\n";
+        for(int i = 0; i < raiz->lista_adj.size(); i++){
+            if(raiz->lista_adj[i]->cor == "branco"){
+                DFS(raiz->lista_adj[i]);
+            }
         }
-    }
-    raiz->cor = "preto";
-    std::cout << raiz->id << " Ficou preto\n";
+        raiz->cor = "preto";
+        std::cout << raiz->id << " Ficou preto\n";
 }
 
+void DFS2(Vertice* raiz, std::vector<Vertice*> &face, int id){
+        raiz->cor = "cinza";
+        std::cout << raiz->id << " Ficou cinza\n";
+        for(int i = 0; i < raiz->lista_adj.size(); i++){
+            if(raiz->lista_adj[i]->id == id){
+                std::cout << "Adicionando " << raiz->lista_adj[i]->id << '\n';
+                face.push_back(raiz->lista_adj[i]);
+            }
+            if(raiz->lista_adj[i]->cor == "branco"){
+                DFS2(raiz->lista_adj[i], face, id);
+            }
+        }
+        raiz->cor = "preto";
+        std::cout << raiz->id << " Ficou preto\n";
+}
 
 int main(){
-    Vertice* v = new Vertice(0, 4, 0, 0);
-    v->lista_adj = {new Vertice(1, 1, 1, 1), new Vertice(2, 1, -1, -1), new Vertice(3, 1, 1, -1), new Vertice(4, 1, -1, 1)};
-    v->lista_adj[0]->lista_adj.push_back(v->lista_adj[2]);
-    v->lista_adj[2]->lista_adj.push_back(v->lista_adj[0]);
+    std::vector<Vertice*> vertices = {new Vertice(0, 4, 0, 0), new Vertice(1, 2, 1, 1), new Vertice(2, 1, -1, -1), new Vertice(3, 2, 1, -1), new Vertice(4, 1, -1, 1)};
+    vertices[0]->lista_adj = {vertices[1], vertices[2], vertices[3], vertices[4]};
+    vertices[1]->lista_adj = {vertices[3]};
+    vertices[3]->lista_adj = {vertices[1]};
+    vertices[3]->lista_adj = {vertices[0]};
+
+    vertices[2]->lista_adj = {vertices[4]};
+    vertices[4]->lista_adj = {vertices[2]};
+    vertices[4]->lista_adj = {vertices[0]};
+
+    vertices.push_back(new Vertice(5, 0, 9, 9));
     
+    //ordena o grafo inteiro
+    for(int i = 0; i < vertices.size(); i++){
+        ordenarPolar(vertices[i]);
+    }
 
-    ordenarPolarRecursivo(v);
-
-    for(int i = 0; i < v->lista_adj.size(); i++){
-        std::cout << v->lista_adj[i]->id << ' ';
+    //lista os adjacentes a vertices[0]
+    for(int i = 0; i < vertices[0]->lista_adj.size(); i++){
+        std::cout << vertices[0]->lista_adj[i]->id << ' ';
     }
     std::cout << '\n';
 
-    DFS(v);
+    //Faz a DFS no grafo inteiro e aramazena uma das faces
+    std::vector<Vertice*> face;
+    int k = 0;
+    for(int i = 0; i < vertices.size(); i++){
+        if(vertices[i]->cor == "preto"){ //ta errado aqui
+            std::cout << "Adicionando " << vertices[i]->id << '\n';
+            face.push_back(vertices[i]);
+            k = vertices[i]->lista_adj[0]->id;
+            i++;
+        }
+        else{
+            DFS2(vertices[i], face, vertices[i]->id);
+        }
+        vertices[i]->cor == "branco";
+    }
+    std::cout << "Adicionando " << vertices[k]->id << '\n';
+    face.push_back(vertices[k]);
 
-    for(int i = 0; i < v->lista_adj.size(); i++){
-        std::cout << v->lista_adj[i]->cor << ' ';
+    //imprimir a face
+    std::cout << '\n';
+    for(int i = 0; i < face.size(); i++){
+        std::cout << face[i]->id << ' ';
     }
     std::cout << '\n';
-
-
 
     return 0;
 }
