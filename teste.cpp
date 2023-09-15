@@ -103,6 +103,19 @@ void ordenarPolar2(Vertice* vertice, Vertice* verticeAntigo){
     }
 }
 
+void ordenarPolar3(Vertice* vertice, Vertice* verticeAntigo){
+    if(vertice->lista_adj.size() < 2){
+        return;
+    }
+    for(int i = 0; i < vertice->lista_adj.size() - 1; i++){
+        if(inclinacaoRelativa(vertice->lista_adj[i]->cord, verticeAntigo->cord) > inclinacaoRelativa(vertice->lista_adj[i + 1]->cord, verticeAntigo->cord)){
+            Vertice* temp = vertice->lista_adj[i];
+            vertice->lista_adj[i] = vertice->lista_adj[i+1];
+            vertice->lista_adj[i+1] = temp;
+        }
+    }
+}
+
 void DFS(Vertice* raiz){
         raiz->cor = "cinza";
         std::cout << raiz->id << " Ficou cinza\n";
@@ -116,7 +129,7 @@ void DFS(Vertice* raiz){
 }
 
 void DFS2(Vertice* raiz, Vertice* raizAntiga, std::vector<Vertice*> &face, int id){
-    ordenarPolar2(raiz, raizAntiga);
+    ordenarPolar3(raiz, raizAntiga);
     //lista os adjacentes a vertices[0]
     std::cout << "Adjacentes de " << raiz->id << ": ";
     for(int i = 0; i < raiz->lista_adj.size(); i++){
