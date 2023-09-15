@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <algorithm>
+#include <stack>
 
 class Ponto{
     public:
@@ -49,6 +51,25 @@ class Vertice{
 
 };
 
+class Aresta{
+    public:
+        Vertice* v1;
+        Vertice* v2;
+        int visitas;
+
+        Aresta(){
+            this->v1 = nullptr;
+            this->v2 = nullptr;
+            this->visitas = 0;
+        }
+
+        Aresta(Vertice* _v1, Vertice* _v2){
+            this->v1 = _v1;
+            this->v2 = _v2;
+            this->visitas = 0;
+        }
+};
+
 // Dist^ancia euclidiana de a para b.
 double distancia(Ponto a, Ponto b) {
     double x = (a.x - b.x), y = (a.y - b.y);
@@ -64,103 +85,46 @@ double inclinacaoRelativa(Ponto p, Ponto q) {
     return atan2(q.y - p.y, q.x - p.x);
 }
 
-// Determina se ao caminhar de a para b e depois de b para c estamos fazendo uma curva `a esquerda, `a direita, ou seguindo em frente.
-int TipoCurva(Ponto a, Ponto b, Ponto c) {
-    double v = a.x*(b.y-c.y)+b.x*(c.y-a.y)+c.x*(a.y-b.y);
-    if (v < 0) return -1; // esquerda.
-    if (v > 0) return +1; // direita.
-    return 0; // em frente.
+// Custom comparison function to sort adjacent vertices by polar angle
+bool compareByPolarAngle(const Vertice* a, const Vertice* b, const Vertice* reference) {
+    double angle_a = atan2(a->cord.y - reference->cord.y, a->cord.x - reference->cord.x);
+    double angle_b = atan2(b->cord.y - reference->cord.y, b->cord.x - reference->cord.x);
+    return angle_a < angle_b;
 }
 
-//Ordena os vértices adjacentes a certo vértice de maneira anti-horária, baseando-se no angulo polar.
-void ordenarPolar(Vertice* vertice){
-    if(vertice->lista_adj.size() < 2){
-        return;
-    }
-    for(int k = 0; k < vertice->lista_adj.size() - 1; k++){
-        for(int i = 0; i < vertice->lista_adj.size() - 1; i++){
-            if(inclinacaoRelativa(vertice->cord, vertice->lista_adj[i]->cord) > inclinacaoRelativa(vertice->cord, vertice->lista_adj[i + 1]->cord)){
-                Vertice* temp = vertice->lista_adj[i];
-                vertice->lista_adj[i] = vertice->lista_adj[i+1];
-                vertice->lista_adj[i+1] = temp;
-            }
-        }
-    }
-}
+void sortAdjacentVerticesByPolarAngle(Vertice* reference, Vertice* ordered) {
+    std::sort(ordered->lista_adj.begin(), ordered->lista_adj.end(),
+              [reference](const Vertice* a, const Vertice* b) {
+                  return compareByPolarAngle(a, b, reference);
+              });
 
-void ordenarPolar2(Vertice* vertice, Vertice* verticeAntigo){
-    if(vertice->lista_adj.size() < 2){
-        return;
-    }
-    for(int k = 0; k < vertice->lista_adj.size() - 1; k++){
-        for(int i = 0; i < vertice->lista_adj.size() - 1; i++){
-            if(inclinacaoRelativa(vertice->lista_adj[i]->cord, verticeAntigo->cord) > inclinacaoRelativa(vertice->lista_adj[i + 1]->cord, verticeAntigo->cord)){
-                Vertice* temp = vertice->lista_adj[i];
-                vertice->lista_adj[i] = vertice->lista_adj[i+1];
-                vertice->lista_adj[i+1] = temp;
-            }
-        }
-    }
-}
-
-void ordenarPolar3(Vertice* vertice, Vertice* verticeAntigo){
-    if(vertice->lista_adj.size() < 2){
-        return;
-    }
-    for(int i = 0; i < vertice->lista_adj.size() - 1; i++){
-        if(inclinacaoRelativa(vertice->lista_adj[i]->cord, verticeAntigo->cord) > inclinacaoRelativa(vertice->lista_adj[i + 1]->cord, verticeAntigo->cord)){
-            Vertice* temp = vertice->lista_adj[i];
-            vertice->lista_adj[i] = vertice->lista_adj[i+1];
-            vertice->lista_adj[i+1] = temp;
-        }
-    }
+    // Reverse the order to make it counterclockwise
+    std::reverse(ordered->lista_adj.begin(), ordered->lista_adj.end());
 }
 
 void DFS(Vertice* raiz){
-        raiz->cor = "cinza";
-        std::cout << raiz->id << " Ficou cinza\n";
-        for(int i = 0; i < raiz->lista_adj.size(); i++){
-            if(raiz->lista_adj[i]->cor == "branco"){
-                DFS(raiz->lista_adj[i]);
-            }
-        }
-        raiz->cor = "preto";
-        std::cout << raiz->id << " Ficou preto\n";
-}
-
-void DFS2(Vertice* raiz, Vertice* raizAntiga, std::vector<Vertice*> &face, int id){
-    ordenarPolar3(raiz, raizAntiga);
-    //lista os adjacentes a vertices[0]
-    std::cout << "Adjacentes de " << raiz->id << ": ";
+    raiz->cor = "cinza";
+    std::cout << raiz->id << " Ficou cinza\n";
     for(int i = 0; i < raiz->lista_adj.size(); i++){
-        std::cout << raiz->lista_adj[i]->id << ' ';
+        if(raiz->lista_adj[i]->cor == "branco"){
+            DFS(raiz->lista_adj[i]);
+        }
     }
-    std::cout << '\n';
-
     raiz->cor = "preto";
     std::cout << raiz->id << " Ficou preto\n";
-    face.push_back(raiz);
-    if(raiz->lista_adj.size() < 1){
-        return;
-    }
-    if(raiz->lista_adj[0]->id == id){
-        face.push_back(raiz->lista_adj[0]);
-        return;
-    }
-    if(raiz->lista_adj[0]->cor != "preto"){
-        DFS2(raiz->lista_adj[0], raiz, face, id);
-    }
-
 }
 
-void DFS2inversa(Vertice* &raiz, std::vector<Vertice*> &face, int id){
-    raiz->cor = "branco";
-    std::cout << raiz->id << " Ficou branco\n";
-    if(raiz->lista_adj[0]->id == id){
-        return;
-    }
-    if(raiz->lista_adj[0]->cor == "preto"){
-        DFS2inversa(raiz->lista_adj[0], face, id);
+void DFS2(Vertice* raiz){
+    if(raiz->lista_adj[0]);
+}
+
+void acharFaces(std::vector<Aresta*> arestas, std::vector<Vertice*> vertices){
+    for(int i = 0; i < arestas.size(); i++){
+        if(arestas[i]->visitas < 2){
+            sortAdjacentVerticesByPolarAngle(arestas[i]->v1, arestas[i]->v2);
+            DFS2(arestas[i]->v2);
+
+        }
     }
 }
 
@@ -173,18 +137,25 @@ int main(){
     vertices[3]->lista_adj.push_back(vertices[1]);
     vertices[3]->lista_adj.push_back(vertices[0]);
 
-    vertices.push_back(new Vertice(5, 0, 9, 9));
+    vertices.push_back(new Vertice(5, 0, 5, 5));
 
-    //Mostra uma face
-    std::vector<Vertice*> face;
-    DFS2(vertices[1], vertices[1]->lista_adj[0], face, vertices[1]->id);
-
-    //imprimir a face
-    std::cout << '\n';
-    for(int i = 0; i < face.size(); i++){
-        std::cout << face[i]->id << ' ';
+    std::vector<Aresta*> arestas;
+    for(int i = 0; i < vertices.size(); i++){
+        for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
+            arestas.push_back(new Aresta(vertices[i], vertices[i]->lista_adj[j]));
+        }
     }
-    std::cout << '\n';
+
+    //DFS PADRÃO
+    for(int i = 0; i < vertices.size(); i++){
+        if(vertices[i]->cor == "preto"){
+            i++;
+        }
+        else{
+            std::cout << "DFS\n";
+            DFS(vertices[i]);
+        }
+    }
 
     return 0;
 }

@@ -48,7 +48,10 @@
     "optional": "cpp",
     "fstream": "cpp",
     "sstream": "cpp",
-    "map": "cpp"
+    "map": "cpp",
+    "chrono": "cpp",
+    "ctime": "cpp",
+    "ratio": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
