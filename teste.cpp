@@ -19,11 +19,15 @@ class Ponto{
         }
 };
 
+class Aresta;
+
 class Vertice{
     public:
         int id;
         Ponto cord;
         int grau;
+
+        Aresta* aresta;
         std::vector<Vertice*> lista_adj;
         std::string cor;
 
@@ -143,6 +147,7 @@ int main(){
     for(int i = 0; i < vertices.size(); i++){
         for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
             arestas.push_back(new Aresta(vertices[i], vertices[i]->lista_adj[j]));
+            vertices[i]->aresta = arestas[arestas.size()];
         }
     }
 
