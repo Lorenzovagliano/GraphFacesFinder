@@ -122,36 +122,62 @@ void DFS2(Vertice* raiz){
     if(raiz->lista_adj[0]);
 }
 
-void acharFaces(std::vector<Aresta*> arestas, std::vector<Vertice*> vertices){
-    for(int i = 0; i < arestas.size(); i++){
-        if(arestas[i]->visitas < 2){
-            sortAdjacentVerticesByPolarAngle(arestas[i]->v1, arestas[i]->v2);
-            DFS2(arestas[i]->v2);
+std::vector<std::vector<Vertice*>> acharFaces(std::vector<Vertice*> vertices){
+    std::vector<std::vector<Vertice*>> faces;
+    faces.resize(20);
+    int f = 0;
+    for(int i = 0; i < vertices.size(); i++){
+        //faces.resize(f++);
+        faces[i].push_back(vertices[i]);
+        vertices[i]->aresta->visitas++;
 
+        std::cout << vertices[i]->id;
+        if(vertices[i]->lista_adj.size() > 0){
+            sortAdjacentVerticesByPolarAngle(vertices[i], vertices[i]->lista_adj[0]);
+            if(vertices[i]->lista_adj[0]->aresta->visitas > 0){
+                break;
+            }
+
+            //faces.resize(f++);
+            faces[i].push_back(vertices[i]->lista_adj[0]);
+            vertices[i]->lista_adj[0]->aresta->visitas++;
+        }
+
+        for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
+            if(vertices[i]->lista_adj[j]->lista_adj.size() > 0){
+                sortAdjacentVerticesByPolarAngle(vertices[i]->lista_adj[j], vertices[i]->lista_adj[j]->lista_adj[0]);
+                if(vertices[i]->lista_adj[j]->lista_adj[0]->aresta->visitas > 0){
+                    break;
+                }
+
+                //faces.resize(f++);
+                faces[i].push_back(vertices[i]->lista_adj[j]->lista_adj[0]);
+                vertices[i]->lista_adj[j]->lista_adj[0]->aresta->visitas++;
+            }
         }
     }
+    return faces;
 }
 
 int main(){
-    std::vector<Vertice*> vertices = {new Vertice(0, 4, 0, 0), new Vertice(1, 2, 1, 1), new Vertice(2, 1, -1, -1), new Vertice(3, 2, 1, -1), new Vertice(4, 1, -1, 1)};
-    vertices[0]->lista_adj = {vertices[1], vertices[2], vertices[3], vertices[4]};
+    std::vector<Vertice*> vertices = {new Vertice(0, 0, 0, 2), new Vertice(1, 1, 0, 2), new Vertice(2, 1, 1, 2), new Vertice(3, 0, 1, 2)};
+    vertices[0]->lista_adj = {vertices[1], vertices[3]};
+    vertices[1]->lista_adj = {vertices[0], vertices[2]};
+    vertices[2]->lista_adj = {vertices[1], vertices[3]};
+    vertices[3]->lista_adj = {vertices[2], vertices[0]};
 
-    vertices[1]->lista_adj.push_back(vertices[0]);
-    vertices[1]->lista_adj.push_back(vertices[3]);
-    vertices[3]->lista_adj.push_back(vertices[1]);
-    vertices[3]->lista_adj.push_back(vertices[0]);
-
-    vertices.push_back(new Vertice(5, 0, 5, 5));
+    vertices.push_back(new Vertice(4, 0, 5, 5));
 
     std::vector<Aresta*> arestas;
     for(int i = 0; i < vertices.size(); i++){
         for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
-            arestas.push_back(new Aresta(vertices[i], vertices[i]->lista_adj[j]));
-            vertices[i]->aresta = arestas[arestas.size()];
+            vertices[i]->aresta = new Aresta(vertices[i], vertices[i]->lista_adj[j]);
         }
     }
 
-    //DFS PADRÃO
+    std::cout << vertices[0]->aresta->v1->id;
+
+    /*//DFS PADRÃO
     for(int i = 0; i < vertices.size(); i++){
         if(vertices[i]->cor == "preto"){
             i++;
@@ -160,7 +186,16 @@ int main(){
             std::cout << "DFS\n";
             DFS(vertices[i]);
         }
-    }
+    }*/
+
+    std::vector<std::vector<Vertice*>> faces = acharFaces(vertices);
+
+    /*for(int i = 0; i < faces.size(); i++){
+        for(int j = 0; j < faces[i].size(); j++){
+            std::cout << faces[i][j]->id << ' ';
+        }
+        std::cout << '\n';
+    }*/
 
     return 0;
 }
