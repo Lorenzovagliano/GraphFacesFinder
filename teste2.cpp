@@ -74,21 +74,6 @@ class Aresta{
         }
 };
 
-// Dist^ancia euclidiana de a para b.
-double distancia(Ponto a, Ponto b) {
-    double x = (a.x - b.x), y = (a.y - b.y);
-    return sqrt(x*x + y*y);
-}
-
-// Coeficiente da reta que passa na origem e p.
-double inclinacao(Ponto p) {
-    return atan2(p.y, p.x);
-}
-// Coeficiente da reta orientada de p para q.
-double inclinacaoRelativa(Ponto p, Ponto q) {
-    return atan2(q.y - p.y, q.x - p.x);
-}
-
 // Custom comparison function to sort adjacent vertices by polar angle
 bool compareByPolarAngle(const Vertice* a, const Vertice* b, const Vertice* reference) {
     double angle_a = atan2(a->cord.y - reference->cord.y, a->cord.x - reference->cord.x);
@@ -132,26 +117,35 @@ void DFS(Vertice* raiz){
     std::cout << raiz->id << " Ficou preto\n";
 }
 
-void acharFacesDFS(Aresta* aresta, std::vector<Vertice*> &face){
+void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> &face){
     if(aresta->visitas > 0){
         return;
     }
 
     face.push_back(aresta->v1);
-    std::cout << "adicionando " << aresta->v1->id << '\n';
+    std::cout << "adicionando " << aresta->v1->id << " pela aresta: " << aresta->v1->id << ',' << aresta->v2->id << '\n';
     aresta->visitas++;
 
     for(int i = 0; i < aresta->v2->lista_arestas.size(); i++){
         sortAdjacentVerticesAndEdgesByPolarAngle(aresta->v2, aresta->v2->lista_adj[i]);
 
-        std::cout << aresta->v2->id << ": \n";
-        for(int j = 0; j < aresta->v2->lista_adj.size(); j++){
-            std::cout << aresta->v2->lista_adj[j]->id << ' ';
+        std::cout << aresta->v2->id << ":\n";
+        for(int j = 0; j < aresta->v2->lista_arestas.size(); j++){
+            std::cout << aresta->v2->lista_arestas[j]->v1->id << ',' << aresta->v2->lista_arestas[j]->v2->id << ' ' << aresta->v2->lista_arestas[j]->visitas << '\n';
         }
         std::cout << '\n';
 
-        if((aresta->v2->lista_arestas[i]->visitas == 0) && (aresta->v2->lista_adj[i] != aresta->v1)){
-            acharFacesDFS(aresta->v2->lista_arestas[i], face);
+        for(int j = 0; j < aresta->v2->lista_arestas.size(); j++){
+            std::cout << aresta->v2->lista_arestas[j]->v1->id << ',' << aresta->v2->lista_arestas[j]->v2->id << ' ' << aresta->v2->lista_arestas[j]->visitas << '\n';
+        }
+
+        if(aresta->v2->lista_arestas[i]->v1 == arestaInicial->v1 && aresta->v2->lista_arestas[i]->v2 == arestaInicial->v2){
+            face.push_back(aresta->v2->lista_arestas[i]->v1);
+            return;
+        }
+        else if((aresta->v2->lista_arestas[i]->visitas == 0) && ((aresta->v2->lista_adj[i] != aresta->v1))){
+            acharFacesDFS(aresta->v2->lista_arestas[i], arestaInicial, face);
+            return;
         }
     }
     return;
@@ -161,7 +155,8 @@ void acharFaces(std::vector<Aresta*> arestas, std::vector<std::vector<Vertice*>>
     for(int i = 0; i < arestas.size(); i++){
         if(arestas[i]->visitas == 0){
             std::vector<Vertice*> face;
-            acharFacesDFS(arestas[i], face);
+            Aresta* arestaInicial = new Aresta(arestas[i]->v1, arestas[i]->v2);
+            acharFacesDFS(arestas[i], arestaInicial, face);
             faces.push_back(face);
         }
     }
@@ -173,33 +168,28 @@ int main(){
     vertices[0]->lista_arestas.push_back(new Aresta(vertices[0], vertices[1]));
     vertices[0]->lista_arestas.push_back(new Aresta(vertices[0], vertices[3]));
 
-    vertices[1]->lista_adj = {vertices[0], vertices[2]};
+    vertices[1]->lista_adj = {vertices[0], vertices[2], vertices[3]};
     vertices[1]->lista_arestas.push_back(new Aresta(vertices[1], vertices[0]));
     vertices[1]->lista_arestas.push_back(new Aresta(vertices[1], vertices[2]));
+    vertices[1]->lista_arestas.push_back(new Aresta(vertices[1], vertices[3]));
 
     vertices[2]->lista_adj = {vertices[1], vertices[3]};
     vertices[2]->lista_arestas.push_back(new Aresta(vertices[2], vertices[1]));
     vertices[2]->lista_arestas.push_back(new Aresta(vertices[2], vertices[3]));
 
-    vertices[3]->lista_adj = {vertices[2], vertices[0]};
+    vertices[3]->lista_adj = {vertices[2], vertices[0], vertices[1]};
     vertices[3]->lista_arestas.push_back(new Aresta(vertices[3], vertices[2]));
     vertices[3]->lista_arestas.push_back(new Aresta(vertices[3], vertices[0]));
+    vertices[3]->lista_arestas.push_back(new Aresta(vertices[3], vertices[1]));
 
     std::vector<Aresta*> arestas;
     for (int i = 0; i < vertices.size(); i++) {
         for (int j = 0; j < vertices[i]->lista_adj.size(); j++) {
-            // Check if the vertex has associated edges
             if (vertices[i]->lista_arestas.size() > j) {
                 arestas.push_back(vertices[i]->lista_arestas[j]);
-                std::cout << vertices[i]->id << ' ' << vertices[i]->lista_adj[j]->id << '\n';
             }
         }
-        std::cout << '\n';
     }
-
-    /*for(int i = 0; i < arestas.size(); i++){
-        std::cout << arestas[i]->visitas << '\n';
-    }*/
 
     std::vector<std::vector<Vertice*>> faces;
     acharFaces(arestas, faces);
