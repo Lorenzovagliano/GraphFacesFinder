@@ -26,6 +26,7 @@ class Vertice{
         int id;
         Ponto cord;
         int grau;
+        bool rabo = false;
 
         std::vector<Vertice*> lista_adj;
         std::vector<Aresta*> lista_arestas;
@@ -158,8 +159,11 @@ void DFS(Vertice* raiz){
     std::cout << raiz->id << " Ficou preto\n";
 }
 
-void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> &face){
+
+void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> &face, bool &rabo){
     sortAdjacentVerticesAndEdgesByRelativePosition(aresta->v1, aresta->v2);
+
+    std::cout << "RABO: " << rabo << '\n';
 
     if(aresta->visitas > 0){
         return;
@@ -169,33 +173,38 @@ void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> 
     std::cout << "adicionando " << aresta->v1->id << " pela aresta: " << aresta->v1->id << ',' << aresta->v2->id << '\n';
     aresta->visitas++;
 
+    if(aresta->v1->lista_adj.size() < 2){
+        return;
+    }
+
     for(int i = 0; i < aresta->v2->lista_arestas.size(); i++){
         sortAdjacentVerticesAndEdgesByRelativePosition(aresta->v2, aresta->v2->lista_adj[i]);
         std::cout << "Ordenando " << aresta->v2->lista_adj[i]->id << ":\n";
         for(int j = 0; j < aresta->v2->lista_adj[i]->lista_adj.size(); j++){
             std::cout << aresta->v2->lista_adj[i]->lista_adj[j]->id << ' ';
         }
-        std::cout << ":\n";
+        std::cout << "\n";
 
-        bool temCaminho;
+        //Checa se chegou na aresta inicial
         if(aresta->v2->lista_arestas[i]->v1 == arestaInicial->v1 && aresta->v2->lista_arestas[i]->v2 == arestaInicial->v2){
-            for(int j = 0; j < aresta->v2->lista_arestas[i]->v2->lista_arestas.size(); j++){
-                if(aresta->v2->lista_arestas[i]->v2->lista_arestas[j]->visitas == 0){
-                    temCaminho == true;
-                    break;
-                }
-                else{
-                    temCaminho == false;
-                }
-            }
-        }
-
-        if(aresta->v2->lista_arestas[i]->v1 == arestaInicial->v1 && aresta->v2->lista_arestas[i]->v2 == arestaInicial->v2 && temCaminho == false){
             face.push_back(aresta->v2->lista_arestas[i]->v1);
+            aresta->v2->lista_arestas[i]->visitas++;
             return;
         }
-        else if((aresta->v2->lista_arestas[i]->visitas == 0) && ((aresta->v2->lista_adj[i] != aresta->v1))){
-            acharFacesDFS(aresta->v2->lista_arestas[i], arestaInicial, face);
+        //Checa se chegou no final de um rabo
+        if((aresta->v2->lista_arestas[i]->v2 == aresta->v1) && ((aresta->v2->lista_adj.size() < 2))){
+            face.push_back(aresta->v2->lista_arestas[i]->v1);
+            aresta->v2->lista_arestas[i]->visitas++;
+            rabo = true;
+
+            aresta->v2->lista_arestas[i]->v1->rabo = true;
+            acharFacesDFS(aresta->v2->lista_arestas[i], arestaInicial, face, rabo);
+            return;
+        }
+        //Avança na DFS normalmente
+        if((aresta->v2->lista_arestas[i]->visitas == 0) && ((aresta->v2->lista_adj[i] != aresta->v1))){
+            rabo = false;
+            acharFacesDFS(aresta->v2->lista_arestas[i], arestaInicial, face, rabo);
             return;
         }
     }
@@ -203,21 +212,22 @@ void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> 
 }
 
 void acharFaces(std::vector<Aresta*> arestas, std::vector<std::vector<Vertice*>> &faces){
+    bool rabo = false;
     for(int i = 0; i < arestas.size(); i++){
         if(arestas[i]->visitas == 0){
             std::vector<Vertice*> face;
 
             Aresta* arestaInicial = new Aresta(arestas[i]->v1, arestas[i]->v2);
-            acharFacesDFS(arestas[i], arestaInicial, face);
+            acharFacesDFS(arestas[i], arestaInicial, face, rabo);
             delete arestaInicial;
-            
+
             faces.push_back(face);
         }
     }
 }
 
 int main(){
-    std::vector<Vertice*> vertices = {new Vertice(0, 0, 0, 2), new Vertice(1, 1, 0, 2), new Vertice(2, 1, 1, 2), new Vertice(3, 0, 1, 2), new Vertice(4, 1.5, 0.5, 2), new Vertice(5, -0.5, -0.5, 1)};
+    std::vector<Vertice*> vertices = {new Vertice(0, 0, 0, 2), new Vertice(1, 1, 0, 2), new Vertice(2, 1, 1, 2), new Vertice(3, 0, 1, 2), new Vertice(4, 1.5, 0.5, 2), new Vertice(5, -0.5, -0.5, 2), new Vertice(6, -1, -1, 2), new Vertice(7, -2, -2, 1)};
     vertices[0]->lista_adj = {vertices[1], vertices[3], vertices[5]};
     vertices[0]->lista_arestas.push_back(new Aresta(vertices[0], vertices[1]));
     vertices[0]->lista_arestas.push_back(new Aresta(vertices[0], vertices[3]));
@@ -243,8 +253,16 @@ int main(){
     vertices[4]->lista_arestas.push_back(new Aresta(vertices[4], vertices[1]));
     vertices[4]->lista_arestas.push_back(new Aresta(vertices[4], vertices[2]));
 
-    vertices[5]->lista_adj = {vertices[0]};
+    vertices[5]->lista_adj = {vertices[0], vertices[6]};
     vertices[5]->lista_arestas.push_back(new Aresta(vertices[5], vertices[0]));
+    vertices[5]->lista_arestas.push_back(new Aresta(vertices[5], vertices[6]));
+
+    vertices[6]->lista_adj = {vertices[5], vertices[7]};
+    vertices[6]->lista_arestas.push_back(new Aresta(vertices[6], vertices[5]));
+    vertices[6]->lista_arestas.push_back(new Aresta(vertices[6], vertices[7]));
+
+    vertices[7]->lista_adj = {vertices[6]};
+    vertices[7]->lista_arestas.push_back(new Aresta(vertices[7], vertices[6]));
 
     std::vector<Aresta*> arestas;
     for (int i = 0; i < vertices.size(); i++) {
