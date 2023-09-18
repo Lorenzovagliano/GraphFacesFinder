@@ -74,7 +74,6 @@ class Aresta{
         }
 };
 
-// Custom comparison function to sort adjacent vertices by polar angle
 bool compareByPolarAngle(const Vertice* a, const Vertice* b, const Vertice* reference) {
     long double angle_a = atan2l(a->cord.y - reference->cord.y, a->cord.x - reference->cord.x);
     long double angle_b = atan2l(b->cord.y - reference->cord.y, b->cord.x - reference->cord.x);
@@ -110,7 +109,6 @@ void acharFacesDFS(Aresta* aresta, Aresta* arestaInicial, std::vector<Vertice*> 
     }
 
     face.push_back(aresta->v1);
-    std::cout << "adicionando " << aresta->v1->id << " pela aresta: " << aresta->v1->id << ',' << aresta->v2->id << '\n';
     aresta->visitas++;
 
     for(int i = 0; i < aresta->v2->lista_arestas.size(); i++){
@@ -158,7 +156,7 @@ int main(){
         for(int j = 0; j < grau; j++){
             int adjacente;
             std::cin >> adjacente;
-            listasAdjacencia[i].push_back(adjacente);
+            listasAdjacencia[i].push_back(adjacente - 1);
         }
     }
     
@@ -184,7 +182,7 @@ int main(){
     std::cout << faces.size() << '\n';
     for(int i = 0; i < faces.size(); i++){
         for(int j = 0; j < faces[i].size(); j++){
-            std::cout << faces[i][j]->id << ' ';
+            std::cout << faces[i].size() << ' ' << faces[i][j]->id + 1 << ' ';
         }
         std::cout << '\n';
     }

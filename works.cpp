@@ -4,19 +4,19 @@
 #include <algorithm>
 
 struct Point {
-    int64_t x, y;
+    long double x, y;
 
-    Point(int64_t x_, int64_t y_): x(x_), y(y_) {}
+    Point(long double x_, long double y_): x(x_), y(y_) {}
 
     Point operator - (const Point & p) const {
         return Point(x - p.x, y - p.y);
     }
 
-    int64_t cross (const Point & p) const {
+    long double cross (const Point & p) const {
         return x * p.y - y * p.x;
     }
 
-    int64_t cross (const Point & p, const Point & q) const {
+    long double cross (const Point & p, const Point & q) const {
         return (p - *this).cross(q - *this);
     }
 
@@ -71,7 +71,7 @@ std::vector<std::vector<size_t>> find_faces(std::vector<Point> vertices, std::ve
             for (size_t j = 0; j < face.size(); j++) {
                 size_t j1 = (j + 1) % face.size();
                 size_t j2 = (j + 2) % face.size();
-                int64_t val = vertices[face[j]].cross(vertices[face[j1]], vertices[face[j2]]);
+                long double val = vertices[face[j]].cross(vertices[face[j1]], vertices[face[j2]]);
                 if (val > 0) {
                     sign = 1;
                     break;
@@ -97,7 +97,7 @@ int main() {
     std::cin >> n >> m;
     adjacency.resize(n);
     for(int i = 0; i < n; i++){
-        double x, y;
+        long double x, y;
         int grau;
         std::cin >> x >> y >> grau;
         vertices.push_back(Point(x, y));
@@ -105,17 +105,16 @@ int main() {
         for(int j = 0; j < grau; j++){
             size_t adjacente;
             std::cin >> adjacente;
-            adjacency[i].push_back(adjacente);
+            adjacency[i].push_back(adjacente - 1);
         }
     }
 
-    std::cout << "FACES\n";
     std::vector<std::vector<size_t>> faces = find_faces(vertices, adjacency);
 
     std::cout << faces.size() << '\n';
     for(int i = 0; i < faces.size(); i++){
         for(int j = 0; j < faces[i].size(); j++){
-            std::cout << faces[i][j] << ' ';
+            std::cout << faces[i].size() << ' ' << faces[i][j] + 1 << ' ';
         }
         std::cout << '\n';
     }
