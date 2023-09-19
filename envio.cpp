@@ -140,7 +140,6 @@ void sortCounterclockwise(Vertice* B, Vertice* A) {
     });
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
-        std::cout << "PONTOS: " << pontos[i].x << ", " << pontos[i].y << '\n';
         for (int j = 0; j < B->lista_arestas.size(); j++){
             if(pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y){
                 arestas.push_back(B->lista_arestas[j]);
@@ -254,58 +253,58 @@ int main(){
     std::vector<Aresta*> arestas;
 
     for(int i = 0; i < vertices.size(); i++){
-        std::cout << vertices[i]->id << ": ";
         for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
-            std::cout << vertices[i]->lista_adj[j]->id << ' ';
 
             Aresta* nova = (new Aresta(vertices[i], vertices[listasAdjacencia[i][j]]));
             arestas.push_back(nova);
             vertices[i]->lista_arestas.push_back(nova);
         }
-        std::cout << '\n';
     }
-    std::cout << '\n';
 
 
     std::vector<std::vector<Vertice*>> faces;
 
     Aresta* inicial = arestas[0];
-    Aresta* atual = inicial;
 
-    std::vector<Vertice*> face;
+    while (inicial->visitada != true) {
+        Aresta* atual = inicial;
+        std::vector<Vertice*> face;
 
-    while (atual->visitada != true) {
-        face.push_back(atual->v1);
-        std::cout << "Adicionando " << atual->v1->id << '\n';
-        atual->visitada = true;
+        while (atual->visitada != true) {
+            face.push_back(atual->v1);
+            atual->visitada = true;
 
-        sortCounterclockwise(atual->v1, atual->v2);
+            sortCounterclockwise(atual->v1, atual->v2);
 
-        std::cout << atual->v1->id << ": ";
-        for (int i = 0; i < atual->v1->lista_arestas.size(); i++) {
-            std::cout << atual->v1->lista_arestas[i]->v2->id << ", ";
+            // Find the next unvisited edge with the smallest polar angle
+            for (int j = 0; j < atual->v2->lista_arestas.size(); j++) {
+                if (atual->v2->lista_arestas[j]->v2 != atual->v1) {
+                    atual = atual->v2->lista_arestas[j];
+                    break;
+                }
+                else if (atual->v2->lista_arestas.size() < 2) {
+                    atual = atual->v2->lista_arestas[j];
+                    break;
+                }
+            }
         }
-        std::cout << '\n';
 
-        // Find the next unvisited edge with the smallest polar angle
-        for (int j = 0; j < atual->v2->lista_arestas.size(); j++) {
-            if (atual->v2->lista_arestas[j]->v2 != atual->v1) {
-                atual = atual->v2->lista_arestas[j];
+        // Add the initial vertex to close the face
+        face.push_back(inicial->v1);
+        faces.push_back(face);
+
+        // Find the next unvisited edge to start a new face
+        for (Aresta* a : arestas) {
+            if (!a->visitada) {
+                inicial = a;
                 break;
             }
-            else if(atual->v2->lista_arestas.size() < 2){
-                atual = atual->v2->lista_arestas[j];
-                break;
-            }
-
         }
     }
-    face.push_back(inicial->v1);
-    faces.push_back(face);
 
-
+    std::cout << faces.size() << '\n';
     for (int i = 0; i < faces.size(); i++) {
-        std::cout << "Face " << i + 1 << ": ";
+        std::cout << faces[i].size() << ' ';
         for (int j = 0; j < faces[i].size(); j++) {
             std::cout << faces[i][j]->id << " ";
         }
