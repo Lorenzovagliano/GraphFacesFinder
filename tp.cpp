@@ -14,6 +14,51 @@ void ordenar(std::vector<int> &vetor){
     }
 }
 
+    std::vector<std::vector<Vertice*>> faces;
+
+    for(int k = 0; k < arestas.size(); k++){
+
+        if(arestas[k]->visitada == true){
+            continue;
+        }
+
+        Aresta* atual = arestas[k];
+        std::vector<Vertice*> face;
+
+        while (atual->visitada != true) {
+            face.push_back(atual->v1);
+            std::cout << "Adicionando " << atual->v1->id << '\n';
+            atual->visitada = true;
+
+            orderAdjacentEdgesByAngle(atual->v1, atual->v2);
+
+            std::cout << atual->v2->id << ": ";
+            for (int i = 0; i < atual->v2->lista_arestas.size(); i++) {
+                std::cout << atual->v2->lista_arestas[i]->v2->id << ", ";
+            }
+            std::cout << '\n';
+
+            // Find the next unvisited edge with the smallest polar angle
+            for (int j = 0; j < atual->v2->lista_arestas.size(); j++) {
+                if (!atual->v2->lista_arestas[j]->visitada) {
+                    if(atual->v2->lista_arestas.size() < 2){
+                        atual = atual->v2->lista_arestas[j];
+                        break;
+                    }
+                    if(atual->v2->lista_arestas.size() >= j + 2){
+                        if(atual->v2->lista_arestas[j+1]->visitada == true){
+                            break;
+                        }
+                        atual = atual->v2->lista_arestas[j+1];
+                        break;
+                    }
+                }
+            }
+        }
+        faces.push_back(face);
+
+    }
+
 
 
 int main(){
