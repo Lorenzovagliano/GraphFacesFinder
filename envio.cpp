@@ -64,22 +64,22 @@ class Aresta{
         }
 };
 
-long double RelativeSlope(const Ponto& p, const Ponto& q) {
+long double inclinacaoRelativa(const Ponto& p, const Ponto& q) {
     return atan2l(q.y - p.y, q.x - p.x);
 }
 
-bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& A, const Ponto& B) {
-    double angleA = RelativeSlope(B, A);
-    double angle1 = RelativeSlope(B, a) - angleA;
-    double angle2 = RelativeSlope(B, b) - angleA;
+bool compararInclinacao(const Ponto& a, const Ponto& b, const Ponto& A, const Ponto& B) {
+    long double anguloA = inclinacaoRelativa(B, A);
+    long double angulo1 = inclinacaoRelativa(B, a) - anguloA;
+    long double angulo2 = inclinacaoRelativa(B, b) - anguloA;
 
-    if (angle1 < 0) angle1 += 2 * M_PI;
-    if (angle2 < 0) angle2 += 2 * M_PI;
+    if (angulo1 < 0) angulo1 += 2 * M_PI;
+    if (angulo2 < 0) angulo2 += 2 * M_PI;
 
-    return angle1 < angle2;
+    return angulo1 < angulo2;
 }
 
-void sortCounterclockwise(Vertice* A, Vertice* B) {
+void sortAntiHorario(Vertice* A, Vertice* B) {
     std::vector<Ponto> pontos;
     std::vector<Aresta*> arestas;
 
@@ -88,7 +88,7 @@ void sortCounterclockwise(Vertice* A, Vertice* B) {
     }
 
     std::sort(pontos.begin(), pontos.end(), [&](const Ponto& a, const Ponto& b) {
-        return CompareByPolarAngle(a, b, A->cord, B->cord);
+        return compararInclinacao(a, b, A->cord, B->cord);
     });
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
@@ -157,13 +157,7 @@ int main(){
             face.push_back(atual->v2);
             atual->visitada = true;
 
-            sortCounterclockwise(atual->v1, atual->v2);
-
-            std::cout << atual->v2->id << ": ";
-            for (int i = 0; i < atual->v2->lista_arestas.size(); i++) {
-                std::cout << atual->v2->lista_arestas[i]->v2->id << ", ";
-            }
-            std::cout << '\n';
+            sortAntiHorario(atual->v1, atual->v2);
 
             for (int j = 0; j < atual->v2->lista_arestas.size(); j++) {
                 if (atual->v2->lista_arestas[j]->v2 != atual->v1) {
@@ -187,13 +181,17 @@ int main(){
         }
     }
 
-    std::cout << faces.size() << '\n';
-    for (int i = 0; i < faces.size(); i++) {
-        std::cout << faces[i].size() << ' ';
-        for (int j = 0; j < faces[i].size(); j++) {
-            std::cout << faces[i][j]->id << " ";
+    if(faces.size() > 0){
+        std::cout << faces.size() << '\n';
+        for (int i = 0; i < faces.size(); i++) {
+            if(faces[i].size() > 0 ){
+                std::cout << faces[i].size() << ' ';
+                for (int j = 0; j < faces[i].size(); j++) {
+                    std::cout << faces[i][j]->id << " ";
+                }
+                std::cout << std::endl;
+            }
         }
-        std::cout << std::endl;
     }
 
     return 0;
