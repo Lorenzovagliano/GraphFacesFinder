@@ -23,37 +23,6 @@ class Ponto{
         }
 };
 
-class angle_sort{
-    Ponto m_origin;
-    Ponto m_dreference;
-
-    // z-coordinate of cross-product, aka determinant
-    static double xp(Ponto a, Ponto b) { return a.x * b.y - a.y * b.x; }
-    public:
-        angle_sort(const Ponto origin, const Ponto reference) : m_origin(origin), m_dreference(reference - origin) {}
-        bool operator()(const Ponto a, const Ponto b) const
-        {
-            const Ponto da = a - m_origin, db = b - m_origin;
-            const double detb = xp(m_dreference, db);
-
-            // nothing is less than zero degrees
-            if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
-
-            const double deta = xp(m_dreference, da);
-
-            // zero degrees is less than anything else
-            if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
-
-            if (deta * detb >= 0) {
-                // both on same side of reference, compare to each other
-                return xp(da, db) > 0;
-            }
-
-            // vectors "less than" zero degrees are actually large, near 2 pi
-            return deta > 0;
-        }
-};
-
 class Aresta;
 
 class Vertice{
@@ -95,43 +64,26 @@ class Aresta{
         }
 };
 
-// Euclidean distance between two points.
-double Distance(const Ponto& a, const Ponto& b) {
-    double x = (a.x - b.x), y = (a.y - b.y);
-    return sqrt(x*x + y*y);
+long double RelativeSlope(const Ponto& p, const Ponto& q) {
+    return atan2l(q.y - p.y, q.x - p.x);
 }
 
-// Slope of the line passing through the origin and point p.
-double Slope(const Ponto& p) {
-    return atan2(p.y, p.x);
+bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& A, const Ponto& B) {
+    double angleA = RelativeSlope(B, A);
+    double angle1 = RelativeSlope(B, a) - angleA;
+    double angle2 = RelativeSlope(B, b) - angleA;
+
+    if (angle1 < 0) angle1 += 2 * M_PI;
+    if (angle2 < 0) angle2 += 2 * M_PI;
+
+    return angle1 < angle2;
 }
 
-// Relative slope of the line from point p to point q.
-double RelativeSlope(const Ponto& p, const Ponto& q) {
-    return atan2(q.y - p.y, q.x - p.x);
-}
-
-// Determine if we are making a left turn, right turn, or going straight
-int TurnType(const Ponto& a, const Ponto& b, const Ponto& c) {
-    double v = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
-    if (v < 0) return -1; // left turn.
-    if (v > 0) return +1; // right turn.
-    return 0; // straight.
-}
-
-// Function to compare points by their relative polar angle to Ponto B and A
-bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& originA, const Ponto& originB) {
-    double angleA = RelativeSlope(originB, a);
-    double angleB = RelativeSlope(originB, b);
-    return angleA < angleB;
-}
-
-// Function to sort a vector of points counterclockwise
-void sortCounterclockwise(Vertice* B, Vertice* A) {
+void sortCounterclockwise(Vertice* A, Vertice* B) {
     std::vector<Ponto> pontos;
     std::vector<Aresta*> arestas;
 
-    for(int i = 0; i < B->lista_arestas.size(); i++){
+    for (int i = 0; i < B->lista_arestas.size(); i++) {
         pontos.push_back(B->lista_arestas[i]->v2->cord);
     }
 
@@ -140,9 +92,10 @@ void sortCounterclockwise(Vertice* B, Vertice* A) {
     });
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
-        for (int j = 0; j < B->lista_arestas.size(); j++){
-            if(pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y){
+        for (int j = 0; j < B->lista_arestas.size(); j++) {
+            if (pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y) {
                 arestas.push_back(B->lista_arestas[j]);
+                break;
             }
         }
     }
@@ -151,77 +104,6 @@ void sortCounterclockwise(Vertice* B, Vertice* A) {
         B->lista_arestas[i] = arestas[i];
     }
 }
-
-void sortAngle(Vertice* v1, Vertice* v2) {
-    Ponto reference = Ponto(v1->cord.x, v2->cord.x);
-    std::vector<Ponto> pontos;
-    std::vector<Aresta*> arestas;
-    
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        pontos.push_back(v2->lista_arestas[i]->v2->cord);
-    }
-    
-    // Sort both pontos and arestas based on the custom comparator
-    std::sort(pontos.begin(), pontos.end(), angle_sort(v2->cord, reference));
-    
-    // Rearrange lista_arestas based on the sorted order of pontos
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        for (int j = 0; j < v2->lista_arestas.size(); j++){
-            if(pontos[i].x == v2->lista_arestas[j]->v2->cord.x && pontos[i].y == v2->lista_arestas[j]->v2->cord.y){
-                arestas.push_back(v2->lista_arestas[j]);
-            }
-        }
-    }
-
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        v2->lista_arestas[i] = arestas[i];
-    }
-}
-
-long double inclinacaoRelativa(Ponto p, Ponto q) {
-    return atan2l(q.y - p.y, q.x - p.x);
-}
-
-void orderAdjacentEdgesByAngle(Vertice* v1, Vertice* v2) {
-    // Calculate the direction vector of the incoming edge (v1, v2)
-    Ponto incomingDir(v2->cord.x - v1->cord.x, v2->cord.y - v1->cord.y);
-
-    // Create a vector of pairs to associate angles with edges
-    std::vector<std::pair<long double, Aresta*>> anglesAndEdges;
-
-    for (int j = 0; j < v2->lista_arestas.size(); j++) {
-        // Calculate the direction vector of the current adjacent edge
-        Ponto edgeDir(v2->lista_arestas[j]->v2->cord.x - v2->cord.x,
-                      v2->lista_arestas[j]->v2->cord.y - v2->cord.y);
-
-        // Calculate the dot product between the incoming edge and the current edge
-        long double dotProduct = incomingDir.x * edgeDir.x + incomingDir.y * edgeDir.y;
-
-        // Calculate the magnitude of the vectors
-        long double incomingMag = sqrt(incomingDir.x * incomingDir.x + incomingDir.y * incomingDir.y);
-        long double edgeMag = sqrt(edgeDir.x * edgeDir.x + edgeDir.y * edgeDir.y);
-
-        // Calculate the angle between the vectors using the dot product
-        long double angle = acos(dotProduct / (incomingMag * edgeMag));
-
-        // Store the angle and the corresponding edge in the vector
-        anglesAndEdges.push_back(std::make_pair(angle, v2->lista_arestas[j]));
-    }
-
-    // Sort the vector of pairs based on angles in ascending order
-    std::sort(anglesAndEdges.begin(), anglesAndEdges.end(),
-              [](const std::pair<long double, Aresta*>& a, const std::pair<long double, Aresta*>& b) {
-                  return a.first < b.first;
-              });
-
-    // Update v2's lista_arestas based on the sorted vector of pairs
-    for (int j = 0; j < anglesAndEdges.size(); j++) {
-        v2->lista_arestas[j] = anglesAndEdges[j].second;
-    }
-
-    std::reverse(v2->lista_arestas.begin(), v2->lista_arestas.end());
-}
-
 
 int main(){
 
@@ -277,7 +159,12 @@ int main(){
 
             sortCounterclockwise(atual->v1, atual->v2);
 
-            // Find the next unvisited edge with the smallest polar angle
+            std::cout << atual->v2->id << ": ";
+            for (int i = 0; i < atual->v2->lista_arestas.size(); i++) {
+                std::cout << atual->v2->lista_arestas[i]->v2->id << ", ";
+            }
+            std::cout << '\n';
+
             for (int j = 0; j < atual->v2->lista_arestas.size(); j++) {
                 if (atual->v2->lista_arestas[j]->v2 != atual->v1) {
                     atual = atual->v2->lista_arestas[j];
@@ -290,10 +177,8 @@ int main(){
             }
         }
 
-        // Add the initial vertex to close the face
         faces.push_back(face);
 
-        // Find the next unvisited edge to start a new face
         for (Aresta* a : arestas) {
             if (!a->visitada) {
                 inicial = a;

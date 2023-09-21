@@ -23,37 +23,6 @@ class Ponto{
         }
 };
 
-class angle_sort{
-    Ponto m_origin;
-    Ponto m_dreference;
-
-    // z-coordinate of cross-product, aka determinant
-    static double xp(Ponto a, Ponto b) { return a.x * b.y - a.y * b.x; }
-    public:
-        angle_sort(const Ponto origin, const Ponto reference) : m_origin(origin), m_dreference(reference - origin) {}
-        bool operator()(const Ponto a, const Ponto b) const
-        {
-            const Ponto da = a - m_origin, db = b - m_origin;
-            const double detb = xp(m_dreference, db);
-
-            // nothing is less than zero degrees
-            if (detb == 0 && db.x * m_dreference.x + db.y * m_dreference.y >= 0) return false;
-
-            const double deta = xp(m_dreference, da);
-
-            // zero degrees is less than anything else
-            if (deta == 0 && da.x * m_dreference.x + da.y * m_dreference.y >= 0) return true;
-
-            if (deta * detb >= 0) {
-                // both on same side of reference, compare to each other
-                return xp(da, db) > 0;
-            }
-
-            // vectors "less than" zero degrees are actually large, near 2 pi
-            return deta > 0;
-        }
-};
-
 class Aresta;
 
 class Vertice{
@@ -95,43 +64,30 @@ class Aresta{
         }
 };
 
-// Euclidean distance between two points.
-long double Distance(const Ponto& a, const Ponto& b) {
-    long double x = (a.x - b.x), y = (a.y - b.y);
-    return sqrt(x*x + y*y);
-}
-
-// Slope of the line passing through the origin and point p.
-long double Slope(const Ponto& p) {
-    return atan2l(p.y, p.x);
-}
-
-// Relative slope of the line from point p to point q.
+// Slope of the line from point p to point q.
 long double RelativeSlope(const Ponto& p, const Ponto& q) {
     return atan2l(q.y - p.y, q.x - p.x);
 }
 
-// Determine if we are making a left turn, right turn, or going straight
-int TurnType(const Ponto& a, const Ponto& b, const Ponto& c) {
-    long double v = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
-    if (v < 0) return -1; // left turn.
-    if (v > 0) return +1; // right turn.
-    return 0; // straight.
+// Compare function to sort pontos counterclockwise with respect to B->A
+bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& A, const Ponto& B) {
+    double angleA = RelativeSlope(B, A);
+    double angle1 = RelativeSlope(B, a) - angleA;
+    double angle2 = RelativeSlope(B, b) - angleA;
+
+    // Ensure angles are in the range [0, 2*pi] for correct sorting
+    if (angle1 < 0) angle1 += 2 * M_PI;
+    if (angle2 < 0) angle2 += 2 * M_PI;
+
+    return angle1 < angle2;
 }
 
-// Function to compare points by their relative polar angle to Ponto B and A
-bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& originA, const Ponto& originB) {
-    long double angleA = RelativeSlope(originB, a);
-    long double angleB = RelativeSlope(originB, b);
-    return angleA < angleB;
-}
-
-// Function to sort a vector of points counterclockwise
-void sortCounterclockwise(Vertice* B, Vertice* A) {
+// Function to sort a vector of pontos counterclockwise
+void sortCounterclockwise(Vertice* A, Vertice* B) {
     std::vector<Ponto> pontos;
     std::vector<Aresta*> arestas;
 
-    for(int i = 0; i < B->lista_arestas.size(); i++){
+    for (int i = 0; i < B->lista_arestas.size(); i++) {
         pontos.push_back(B->lista_arestas[i]->v2->cord);
     }
 
@@ -140,10 +96,10 @@ void sortCounterclockwise(Vertice* B, Vertice* A) {
     });
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
-        std::cout << "PONTOS: " << pontos[i].x << ", " << pontos[i].y << '\n';
-        for (int j = 0; j < B->lista_arestas.size(); j++){
-            if(pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y){
+        for (int j = 0; j < B->lista_arestas.size(); j++) {
+            if (pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y) {
                 arestas.push_back(B->lista_arestas[j]);
+                break;
             }
         }
     }
@@ -153,35 +109,6 @@ void sortCounterclockwise(Vertice* B, Vertice* A) {
     }
 }
 
-void sortAngle(Vertice* v1, Vertice* v2) {
-    Ponto reference = Ponto(v1->cord.x, v2->cord.x);
-    std::vector<Ponto> pontos;
-    std::vector<Aresta*> arestas;
-    
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        pontos.push_back(v2->lista_arestas[i]->v2->cord);
-    }
-    
-    // Sort both pontos and arestas based on the custom comparator
-    std::sort(pontos.begin(), pontos.end(), angle_sort(v2->cord, reference));
-    
-    // Rearrange lista_arestas based on the sorted order of pontos
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        for (int j = 0; j < v2->lista_arestas.size(); j++){
-            if(pontos[i].x == v2->lista_arestas[j]->v2->cord.x && pontos[i].y == v2->lista_arestas[j]->v2->cord.y){
-                arestas.push_back(v2->lista_arestas[j]);
-            }
-        }
-    }
-
-    for (int i = 0; i < v2->lista_arestas.size(); i++) {
-        v2->lista_arestas[i] = arestas[i];
-    }
-}
-
-long double inclinacaoRelativa(Ponto p, Ponto q) {
-    return atan2l(q.y - p.y, q.x - p.x);
-}
 
 void orderAdjacentEdgesByAngle(Vertice* v1, Vertice* v2) {
     // Calculate the direction vector of the incoming edge (v1, v2)
@@ -269,12 +196,13 @@ int main(){
 
     std::vector<std::vector<Vertice*>> faces;
 
-    Aresta* inicial = arestas[3];
+    Aresta* inicial = arestas[13];
     Aresta* atual = inicial;
 
     std::vector<Vertice*> face;
 
     face.push_back(inicial->v1);
+    std::cout << "Adicionando " << inicial->v1->id << '\n';
     while (atual->visitada != true) {
         std::cout << "Aresta atual: (" << atual->v1->id << ", " << atual->v2->id << ")\n";
         face.push_back(atual->v2);
