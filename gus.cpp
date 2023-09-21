@@ -96,24 +96,24 @@ class Aresta{
 };
 
 // Euclidean distance between two points.
-double Distance(const Ponto& a, const Ponto& b) {
-    double x = (a.x - b.x), y = (a.y - b.y);
+long double Distance(const Ponto& a, const Ponto& b) {
+    long double x = (a.x - b.x), y = (a.y - b.y);
     return sqrt(x*x + y*y);
 }
 
 // Slope of the line passing through the origin and point p.
-double Slope(const Ponto& p) {
-    return atan2(p.y, p.x);
+long double Slope(const Ponto& p) {
+    return atan2l(p.y, p.x);
 }
 
 // Relative slope of the line from point p to point q.
-double RelativeSlope(const Ponto& p, const Ponto& q) {
-    return atan2(q.y - p.y, q.x - p.x);
+long double RelativeSlope(const Ponto& p, const Ponto& q) {
+    return atan2l(q.y - p.y, q.x - p.x);
 }
 
 // Determine if we are making a left turn, right turn, or going straight
 int TurnType(const Ponto& a, const Ponto& b, const Ponto& c) {
-    double v = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
+    long double v = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
     if (v < 0) return -1; // left turn.
     if (v > 0) return +1; // right turn.
     return 0; // straight.
@@ -121,8 +121,8 @@ int TurnType(const Ponto& a, const Ponto& b, const Ponto& c) {
 
 // Function to compare points by their relative polar angle to Ponto B and A
 bool CompareByPolarAngle(const Ponto& a, const Ponto& b, const Ponto& originA, const Ponto& originB) {
-    double angleA = RelativeSlope(originB, a);
-    double angleB = RelativeSlope(originB, b);
+    long double angleA = RelativeSlope(originB, a);
+    long double angleB = RelativeSlope(originB, b);
     return angleA < angleB;
 }
 
@@ -269,21 +269,23 @@ int main(){
 
     std::vector<std::vector<Vertice*>> faces;
 
-    Aresta* inicial = arestas[0];
+    Aresta* inicial = arestas[3];
     Aresta* atual = inicial;
 
     std::vector<Vertice*> face;
 
+    face.push_back(inicial->v1);
     while (atual->visitada != true) {
-        face.push_back(atual->v1);
-        std::cout << "Adicionando " << atual->v1->id << '\n';
+        std::cout << "Aresta atual: (" << atual->v1->id << ", " << atual->v2->id << ")\n";
+        face.push_back(atual->v2);
+        std::cout << "Adicionando " << atual->v2->id << '\n';
         atual->visitada = true;
 
         sortCounterclockwise(atual->v1, atual->v2);
 
-        std::cout << atual->v1->id << ": ";
-        for (int i = 0; i < atual->v1->lista_arestas.size(); i++) {
-            std::cout << atual->v1->lista_arestas[i]->v2->id << ", ";
+        std::cout << atual->v2->id << ": ";
+        for (int i = 0; i < atual->v2->lista_arestas.size(); i++) {
+            std::cout << atual->v2->lista_arestas[i]->v2->id << ", ";
         }
         std::cout << '\n';
 
@@ -300,7 +302,6 @@ int main(){
 
         }
     }
-    face.push_back(inicial->v1);
     faces.push_back(face);
 
 

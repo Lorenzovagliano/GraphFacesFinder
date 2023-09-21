@@ -270,8 +270,9 @@ int main(){
         Aresta* atual = inicial;
         std::vector<Vertice*> face;
 
+        face.push_back(inicial->v1);
         while (atual->visitada != true) {
-            face.push_back(atual->v1);
+            face.push_back(atual->v2);
             atual->visitada = true;
 
             sortCounterclockwise(atual->v1, atual->v2);
@@ -290,7 +291,6 @@ int main(){
         }
 
         // Add the initial vertex to close the face
-        face.push_back(inicial->v1);
         faces.push_back(face);
 
         // Find the next unvisited edge to start a new face
