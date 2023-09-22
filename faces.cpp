@@ -2,7 +2,6 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include <map>
 
 class Ponto{
     public:
@@ -30,7 +29,6 @@ class Vertice{
         int id;
         Ponto cord;
 
-        std::vector<Vertice*> lista_adj;
         std::vector<Aresta*> lista_arestas;
 
         Vertice(){
@@ -80,28 +78,18 @@ bool compararInclinacao(const Ponto& a, const Ponto& b, const Ponto& A, const Po
 }
 
 void sortAntiHorario(Vertice* A, Vertice* B) {
-    std::vector<Ponto> pontos;
-    std::vector<Aresta*> arestas;
+    std::vector<std::pair<Ponto, Aresta*>> pontosEArestdas;
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
-        pontos.push_back(B->lista_arestas[i]->v2->cord);
+        pontosEArestdas.push_back(std::make_pair(B->lista_arestas[i]->v2->cord, B->lista_arestas[i]));
     }
 
-    std::sort(pontos.begin(), pontos.end(), [&](const Ponto& a, const Ponto& b) {
-        return compararInclinacao(a, b, A->cord, B->cord);
+    std::sort(pontosEArestdas.begin(), pontosEArestdas.end(), [&](const std::pair<Ponto, Aresta*>& a, const std::pair<Ponto, Aresta*>& b) {
+        return compararInclinacao(a.first, b.first, A->cord, B->cord);
     });
 
     for (int i = 0; i < B->lista_arestas.size(); i++) {
-        for (int j = 0; j < B->lista_arestas.size(); j++) {
-            if (pontos[i].x == B->lista_arestas[j]->v2->cord.x && pontos[i].y == B->lista_arestas[j]->v2->cord.y) {
-                arestas.push_back(B->lista_arestas[j]);
-                break;
-            }
-        }
-    }
-
-    for (int i = 0; i < B->lista_arestas.size(); i++) {
-        B->lista_arestas[i] = arestas[i];
+        B->lista_arestas[i] = pontosEArestdas[i].second;
     }
 }
 
@@ -126,17 +114,10 @@ int main(){
         }
     }
 
-    for (int i = 0; i < vertices.size(); i++){
-        for (int j = 0; j < listasAdjacencia[i].size(); j++){
-            vertices[i]->lista_adj.push_back(vertices[listasAdjacencia[i][j]]);
-        }
-    }
-
     std::vector<Aresta*> arestas;
 
     for(int i = 0; i < vertices.size(); i++){
-        for(int j = 0; j < vertices[i]->lista_adj.size(); j++){
-
+        for(int j = 0; j < listasAdjacencia[i].size(); j++){
             Aresta* nova = (new Aresta(vertices[i], vertices[listasAdjacencia[i][j]]));
             arestas.push_back(nova);
             vertices[i]->lista_arestas.push_back(nova);
@@ -192,6 +173,14 @@ int main(){
                 std::cout << std::endl;
             }
         }
+    }
+
+    for(int i = 0; i < arestas.size(); i++){
+        delete arestas[i];
+    }
+
+    for(int i = 0; i < vertices.size(); i++){
+        delete vertices[i];
     }
 
     return 0;
