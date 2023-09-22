@@ -5,14 +5,14 @@
 
 class Ponto{
     public:
-        long double x, y;
+        double x, y;
 
         Ponto(){
             this->x = 0;
             this->y = 0;
         }
 
-        Ponto(long double _x, long double _y){
+        Ponto(double _x, double _y){
             this->x = _x;
             this->y = _y;
         }
@@ -36,7 +36,7 @@ class Vertice{
             this->cord = Ponto();
         }
 
-        Vertice(int _id, long double _x, long double _y){
+        Vertice(int _id, double _x, double _y){
             this->id = _id;
             this->cord = Ponto(_x, _y);
         }
@@ -62,14 +62,14 @@ class Aresta{
         }
 };
 
-long double inclinacaoRelativa(const Ponto& p, const Ponto& q) {
-    return atan2l(q.y - p.y, q.x - p.x);
+double inclinacaoRelativa(const Ponto& p, const Ponto& q) {
+    return atan2(q.y - p.y, q.x - p.x);
 }
 
 bool compararInclinacao(const Ponto& a, const Ponto& b, const Ponto& A, const Ponto& B) {
-    long double anguloA = inclinacaoRelativa(B, A);
-    long double angulo1 = inclinacaoRelativa(B, a) - anguloA;
-    long double angulo2 = inclinacaoRelativa(B, b) - anguloA;
+    double anguloA = inclinacaoRelativa(B, A);
+    double angulo1 = inclinacaoRelativa(B, a) - anguloA;
+    double angulo2 = inclinacaoRelativa(B, b) - anguloA;
 
     if (angulo1 < 0) angulo1 += 2 * M_PI;
     if (angulo2 < 0) angulo2 += 2 * M_PI;
@@ -102,7 +102,7 @@ int main(){
     std::cin >> n >> m;
     listasAdjacencia.resize(n);
     for(int i = 0; i < n; i++){
-        long double x, y;
+        double x, y;
         int grau;
         std::cin >> x >> y >> grau;
         vertices.push_back(new Vertice(i + 1, x, y));
