@@ -15,7 +15,7 @@ To run the program, use:
 
     ./faces
 
-- The format of the inputs must utilize the following format:
+- The format of the inputs must be the following:
 
   N(number of vertices) M(number of edges)
   <p>
