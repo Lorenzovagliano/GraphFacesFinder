@@ -31,11 +31,11 @@ To run the program, use:
   <p>
   Number of Faces
   <p>
-  Face1
+  Size Face1
   <p>
-  Face2
+  Size Face2
   <p>
-  Face3
+  Size Face3
   <p>
   ...
   <p>
