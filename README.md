@@ -42,7 +42,7 @@ To run the program, use:
   <p>
 
 - Example:
-  <p>
-  ![02Fzi15](https://github.com/Lorenzovagliano/GraphFacesFinder/assets/111889654/8adc9cde-3502-4dbb-bf73-df3fd7606414)
+    <p>
+![02Fzi15](https://github.com/Lorenzovagliano/GraphFacesFinder/assets/111889654/4232a8af-8f8d-4b99-97b0-b6972161d0d5)
 
 
