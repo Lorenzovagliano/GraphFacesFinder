@@ -1,6 +1,6 @@
 ## **GraphFacesFinder**
 ---
-This program is able to list all of the faces of a graph, which is inputted by the user through its number of vertices, number of edges and its vertices(which must contain 2D coordinates, degree and adjacency list).
+This program is able to list all of the faces of a planar graph(with straight edges), which is inputted by the user through its number of vertices, number of edges and its vertices(which must contain 2D coordinates, degree and adjacency list).
 ---
 ### **Tools** 
 ---
