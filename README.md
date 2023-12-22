@@ -8,7 +8,7 @@ This program is able to list all of the faces of a planar graph(with straight ed
 - Compiler: [GCC](https://gcc.gnu.org/)
 ---
 ### How to use it
-In order to compile the program, you must use the following command: 
+In order to compile the program, use the following command: 
 
     g++ faces.cpp -o faces
 To run the program, use:
